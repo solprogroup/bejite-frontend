@@ -209,6 +209,8 @@ export default function FeatureTour() {
   const role = normalizeRole(user?.role);
   const userId = user?._id || user?.id || user?.email;
   const onAppRoute = !shouldSkipPath(location.pathname);
+  // Tour targets live in the news-feed chrome; only start there.
+  const onNewsFeed = location.pathname === "/news-feed";
 
   const steps = useMemo(() => buildSteps(role), [role]);
 
@@ -224,15 +226,19 @@ export default function FeatureTour() {
     cleanupLegacyTourSeenKeys();
   }, []);
 
-  const finishTour = useCallback(() => {
-    writeFeatureTourSeen(userId);
-    setTourActive(false);
+  const pauseTourUi = useCallback(() => {
     setIsOpen(false);
-    setStepIndex(0);
+    setTourActive(false);
     setRect(null);
     window.dispatchEvent(new Event("bejite:close-mobile-nav"));
     mobileNavOpenedRef.current = false;
-  }, [userId]);
+  }, []);
+
+  const finishTour = useCallback(() => {
+    writeFeatureTourSeen(userId);
+    pauseTourUi();
+    setStepIndex(0);
+  }, [userId, pauseTourUi]);
 
   const measureTarget = useCallback((tourId) => {
     if (!tourId) {
@@ -258,14 +264,11 @@ export default function FeatureTour() {
     });
   }, []);
 
-  // Decide whether to start the tour
+  // Decide whether to start the tour (news-feed only; pause if user leaves)
   useEffect(() => {
-    if (!authenticated || !onAppRoute || !role) {
-      setIsOpen(false);
-      setTourActive(false);
-      setRect(null);
-      window.dispatchEvent(new Event("bejite:close-mobile-nav"));
-      mobileNavOpenedRef.current = false;
+    if (!authenticated || !onAppRoute || !role || !onNewsFeed) {
+      // Leaving news-feed pauses without marking seen, so it can resume later.
+      pauseTourUi();
       return undefined;
     }
 
@@ -295,7 +298,7 @@ export default function FeatureTour() {
         setTourActive(false);
       }
     };
-  }, [authenticated, onAppRoute, role, userId, location.search]);
+  }, [authenticated, onAppRoute, onNewsFeed, role, userId, location.search, pauseTourUi]);
 
   // Keep spotlight aligned with the current step target
   useEffect(() => {

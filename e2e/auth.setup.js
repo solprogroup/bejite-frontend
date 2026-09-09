@@ -2,6 +2,7 @@ import { test as setup, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { markToursSeen } from './helpers/featureTour.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const authFile = path.join(__dirname, '.auth/user.json');
@@ -60,6 +61,14 @@ setup('authenticate as user', async ({ page }) => {
   await expect
     .poll(async () => new URL(page.url()).pathname, { timeout: 30_000 })
     .not.toBe('/');
+
+  // Prevent the feature-tour overlay from blocking authenticated e2e clicks.
+  await expect
+    .poll(async () => page.evaluate(() => localStorage.getItem('user')), {
+      timeout: 15_000,
+    })
+    .toBeTruthy();
+  await markToursSeen(page);
 
   await page.context().storageState({ path: authFile });
 });
