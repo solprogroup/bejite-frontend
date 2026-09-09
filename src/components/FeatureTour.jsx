@@ -175,8 +175,8 @@ function buildSteps(role) {
       id: "badge-status",
       title: "Badge Status",
       body: isJobseeker
-        ? "Get a Verified Badge on your profile — plus monthly employment reports, partner events, and featured placement."
-        : "Get the Verified Recruiter badge by uploading your ID and gain more trust from jobseekers.",
+        ? "Get a Verified Badge on your profile — plus monthly/weekly job application reports, partner events, and featured placement."
+        : "Get the Verified Recruiter badge by uploading your ID and gain more trust from jobseekers - plus monthly/weekly job posting reports and partner events.",
       target: "badge-status",
       mobileNav: true,
     },
