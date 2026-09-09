@@ -4,8 +4,12 @@ import { useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { getAccessToken, getUser, isAuthenticated } from "../utils/tokenManager";
+import {
+  cleanupLegacyTourSeenKeys,
+  readFeatureTourSeen,
+  writeFeatureTourSeen,
+} from "../utils/featureTourStorage";
 
-const TOUR_SEEN_PREFIX = "bejite_feature_tour_seen_";
 const TOUR_ACTIVE_KEY = "bejite_feature_tour_active";
 
 const SKIP_EXACT = new Set([
@@ -34,6 +38,7 @@ const SKIP_PREFIXES = [
   "/corporate/",
   "/jobseeker-option",
   "/employer-option",
+  "/employer/recruitment-management",
   "/jobconnection",
   "/verify-email",
   "/verify-failed",
@@ -49,24 +54,6 @@ function shouldSkipPath(pathname) {
 
 function normalizeRole(role) {
   return String(role || "").trim().toLowerCase();
-}
-
-function readSeen(userId) {
-  if (!userId) return false;
-  try {
-    return localStorage.getItem(`${TOUR_SEEN_PREFIX}${userId}`) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function writeSeen(userId) {
-  if (!userId) return;
-  try {
-    localStorage.setItem(`${TOUR_SEEN_PREFIX}${userId}`, "true");
-  } catch {
-    /* ignore */
-  }
 }
 
 function setTourActive(active) {
@@ -179,15 +166,17 @@ function buildSteps(role) {
       id: "activity-log",
       title: "Activity Log",
       body: isJobseeker
-        ? "Track applications, invites, and other hiring activity in one place."
-        : "Review applications, shortlists, and hiring activity across your pipeline.",
+        ? "Manage everything you’ve shared — your posts and media, plus weekly or monthly likes, comments, and views."
+        : "Review your posts and engagement stats, and open Job Applications to manage candidates who applied to your roles.",
       target: "activity-log",
       mobileNav: true,
     },
     {
       id: "badge-status",
       title: "Badge Status",
-      body: "Check your verification badge status and complete any steps needed to get verified.",
+      body: isJobseeker
+        ? "Get a Verified Badge on your profile — plus monthly employment reports, partner events, and featured placement."
+        : "Get the Verified Recruiter badge by uploading your ID and gain more trust from jobseekers.",
       target: "badge-status",
       mobileNav: true,
     },
@@ -231,8 +220,12 @@ export default function FeatureTour() {
   const currentStep = steps[stepIndex] || null;
   const isLast = stepIndex >= steps.length - 1;
 
+  useEffect(() => {
+    cleanupLegacyTourSeenKeys();
+  }, []);
+
   const finishTour = useCallback(() => {
-    writeSeen(userId);
+    writeFeatureTourSeen(userId);
     setTourActive(false);
     setIsOpen(false);
     setStepIndex(0);
@@ -278,7 +271,7 @@ export default function FeatureTour() {
 
     const params = new URLSearchParams(window.location.search);
     const forceShow = params.get("showtour") === "true";
-    if (!forceShow && readSeen(userId)) {
+    if (!forceShow && readFeatureTourSeen(userId)) {
       setIsOpen(false);
       setTourActive(false);
       return undefined;

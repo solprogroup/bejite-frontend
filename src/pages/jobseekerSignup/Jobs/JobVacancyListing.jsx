@@ -13,11 +13,13 @@ import {
 } from "../../../services/jobVacancyApi";
 import { toast } from "react-toastify";
 import { FaBookmark, FaSpinner } from "react-icons/fa";
+import { getUser } from "../../../utils/tokenManager";
 
 const JOBS_PER_PAGE = 6;
 
 const JobVacancyListing = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const currentUserId = getUser()?.id || null;
   const [jobs, setJobs] = useState([]);
   const [industries, setIndustries] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -371,6 +373,7 @@ const JobVacancyListing = () => {
                         onSave={handleSaveJob}
                         onUnsave={handleUnsaveJob}
                         onClick={() => setSelectedJob(job)}
+                        currentUserId={currentUserId}
                       />
                     ))}
                   </div>

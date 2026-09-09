@@ -25,6 +25,7 @@ import {
   getComments,
   voteOnPoll,
 } from "../../services/postsApi";
+import usePostImpression from "../../hooks/usePostImpression";
 import { getPostDetailPath } from "../../utils/postNavigation";
 import {
   buildPostShareText,
@@ -643,6 +644,11 @@ const RecruitmentPostCard = ({
 
   const isOwner = String(post.authorId) === String(currentUserId);
   const isRepost = Boolean(post.repostedBy);
+  const impressionRef = usePostImpression({
+    postId: post.id,
+    authorId: post.authorId,
+    currentUserId,
+  });
   const [liked, setLiked] = useState(post.likedByMe === true);
   const [saved, setSaved] = useState(post.savedByMe === true);
   const [sharedByMe, setSharedByMe] = useState(post.sharedByMe === true);
@@ -914,7 +920,10 @@ const RecruitmentPostCard = ({
     : getAuthorProfileImageUrl(post.author);
 
   return (
-    <div className="max-w-3xl p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 bg-white shadow rounded-2xl">
+    <div
+      ref={impressionRef}
+      className="max-w-3xl p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 bg-white shadow rounded-2xl"
+    >
       <RepostIntro
         repostedBy={post.repostedBy}
         quote={post.repostQuote}

@@ -16,8 +16,16 @@ import { profilePhotoUrl } from "../../utils/profilePhotoUrl";
 import { getJobCardExcerpt } from "../../utils/jobDescription";
 import VerifiedBadge from "../VerifiedBadge";
 import { userHasVerifiedBadge, userShowsUnverifiedRecruiterPill } from "../../utils/verifiedBadge";
+import useJobImpression from "../../hooks/useJobImpression";
 
-export const JobCard = ({ job, isSaved, onSave, onUnsave, onClick }) => {
+export const JobCard = ({
+  job,
+  isSaved,
+  onSave,
+  onUnsave,
+  onClick,
+  currentUserId = null,
+}) => {
   const timeRemaining = formatTimeRemaining(job.expiresAt);
   const salary = formatSalary(job);
   const companyLogoSrc = profilePhotoUrl(
@@ -27,9 +35,16 @@ export const JobCard = ({ job, isSaved, onSave, onUnsave, onClick }) => {
   const isIndividualPoster =
     String(job.posterMode || "").toLowerCase() === "individual";
   const PosterIcon = isIndividualPoster ? FaUser : FaBuilding;
+  const impressionRef = useJobImpression({
+    jobId: job.id,
+    postedBy: job.postedBy,
+    currentUserId,
+    enabled: Boolean(currentUserId),
+  });
 
   return (
     <div
+      ref={impressionRef}
       onClick={onClick}
       className="group relative bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:border-[#16730F]/30 hover:-translate-y-1"
     >

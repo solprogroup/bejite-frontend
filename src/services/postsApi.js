@@ -351,16 +351,18 @@ export const unsavePost = async (postId) => {
 // ============================================
 
 /**
- * Record post impression (deduped per user/post/UTC day)
+ * Record post impression (deduped per user/post/UTC day).
+ * Failures are swallowed so tracking never disrupts the feed.
  * @param {string} postId - Post UUID
  */
 export const recordImpression = async (postId) => {
   try {
-    const response = await axiosInstance.post(`${POSTS_API_URL}/${postId}/impression`);
+    const response = await axiosInstance.post(
+      `${POSTS_API_URL}/${postId}/impression`,
+    );
     return response.data;
-  } catch (error) {
-    console.error('Error recording impression:', error);
-    throw error;
+  } catch {
+    return { counted: false, error: true };
   }
 };
 
@@ -614,15 +616,24 @@ export const removeConnection = async (peerUserId) => {
 const METRICS_API_URL = '/api/metrics';
 
 /**
- * Get current user's metrics
- * Returns: postsPublished, likesGiven, commentsWritten, impressionsReceived
+ * Get current user's metrics (aggregate + per-post).
+ * @param {'all'|'week'|'month'} [period='all']
+ * @param {{ postIds?: string[], limit?: number, offset?: number }} [options]
  */
-export const getMyMetrics = async () => {
+export const getMyMetrics = async (period = "all", options = {}) => {
   try {
-    const response = await axiosInstance.get(`${METRICS_API_URL}/me`);
+    const params = { period };
+    if (Array.isArray(options.postIds) && options.postIds.length > 0) {
+      params.postIds = options.postIds.join(",");
+    }
+    if (options.limit != null) params.limit = options.limit;
+    if (options.offset != null) params.offset = options.offset;
+    const response = await axiosInstance.get(`${METRICS_API_URL}/me`, {
+      params,
+    });
     return response.data;
   } catch (error) {
-    console.error('Error fetching metrics:', error);
+    console.error("Error fetching metrics:", error);
     throw error;
   }
 };

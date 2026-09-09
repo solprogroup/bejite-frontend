@@ -33,7 +33,10 @@ export default function RecruitmentListTable({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm flex flex-col">
+    <div
+      data-tour-id="rm-list"
+      className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm flex flex-col"
+    >
       {/* Top Header Row inside Table Container */}
       <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 bg-white">
         <div>
