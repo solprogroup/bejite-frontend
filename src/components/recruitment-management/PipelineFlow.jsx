@@ -73,7 +73,10 @@ export default function PipelineFlow({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-3xl p-4 sm:p-6 shadow-sm min-w-0">
+    <div
+      data-tour-id="rm-pipeline"
+      className="bg-white border border-gray-200 rounded-3xl p-4 sm:p-6 shadow-sm min-w-0"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 mb-4">
         <div className="text-xs font-extrabold tracking-wider text-gray-700 uppercase">
           Pipeline Progression Flow

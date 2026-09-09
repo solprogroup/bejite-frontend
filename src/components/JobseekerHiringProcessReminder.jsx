@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaTimes } from 'react-icons/fa';
@@ -48,6 +48,28 @@ function normalizeRole(role) {
   return String(role || '').trim().toLowerCase();
 }
 
+function isFeatureTourActive() {
+  try {
+    return sessionStorage.getItem('bejite_feature_tour_active') === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function useFeatureTourSuppressed() {
+  const [suppressed, setSuppressed] = useState(() => isFeatureTourActive());
+
+  useEffect(() => {
+    const onTour = (e) => {
+      setSuppressed(Boolean(e?.detail?.active) || isFeatureTourActive());
+    };
+    window.addEventListener('bejite:feature-tour', onTour);
+    return () => window.removeEventListener('bejite:feature-tour', onTour);
+  }, []);
+
+  return suppressed;
+}
+
 /**
  * Fixed corner popup for job seekers who have already completed their profile,
  * reminding them to update and match Bejite's hiring process for recruiters.
@@ -62,6 +84,7 @@ export default function JobseekerHiringProcessReminder() {
   const reduxToken = useSelector((state) => state.auth?.token);
   const reduxUser = useSelector((state) => state.auth?.user);
   const [dismissed, setDismissed] = useState(false);
+  const tourActive = useFeatureTourSuppressed();
 
   const token = reduxToken || getAccessToken() || '';
   const authenticated = Boolean(token) || isAuthenticated();
@@ -99,6 +122,7 @@ export default function JobseekerHiringProcessReminder() {
     // Check if the user has completed their profile first
     if (profileCompleted !== true) return false;
     if (isDismissedInStorage) return false;
+    if (tourActive) return false;
     return true;
   }, [
     forceShow,
@@ -108,6 +132,7 @@ export default function JobseekerHiringProcessReminder() {
     isJobseeker,
     profileCompleted,
     isDismissedInStorage,
+    tourActive,
   ]);
 
   const handleDismiss = () => {

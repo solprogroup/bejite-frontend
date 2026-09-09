@@ -66,6 +66,7 @@ export default function RecruitmentFilterBar({
     { label: "Hired", value: "hired" },
   ],
   showDateFilter = true,
+  tourId,
 }) {
   const [isDateOpen, setIsDateOpen] = useState(false);
   const datePanelRef = useRef(null);
@@ -84,7 +85,10 @@ export default function RecruitmentFilterBar({
       : "Select dates");
 
   return (
-    <div className="bg-[#EFF5F2] border border-[#D5E5DD] p-3 sm:p-4 rounded-2xl flex flex-col xl:flex-row items-stretch xl:items-center gap-2.5 sm:gap-3 shadow-xs">
+    <div
+      data-tour-id={tourId || undefined}
+      className="bg-[#EFF5F2] border border-[#D5E5DD] p-3 sm:p-4 rounded-2xl flex flex-col xl:flex-row items-stretch xl:items-center gap-2.5 sm:gap-3 shadow-xs"
+    >
       {/* Search Input */}
       <div className="relative flex-1 min-w-0">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">

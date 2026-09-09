@@ -58,6 +58,17 @@ export const submitJobApplication = async (jobId, applicationData) => {
   return response.data;
 };
 
+export const recordJobImpression = async (jobId) => {
+  try {
+    const response = await axiosInstance.post(
+      `/api/job-board/vacancies/${jobId}/impression`,
+    );
+    return response.data;
+  } catch {
+    return { counted: false, error: true };
+  }
+};
+
 export default {
   getJobVacancies,
   getJobVacancyById,
@@ -65,4 +76,5 @@ export default {
   getJobVacancyLastSeenAt,
   markJobVacanciesSeen,
   submitJobApplication,
+  recordJobImpression,
 };

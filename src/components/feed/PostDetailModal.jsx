@@ -10,7 +10,7 @@ import RepostModal from "../RepostModal";
 import { OriginalPostNest, RepostIntro } from "./RepostChrome";
 import UsersListModal from "../UsersListModal";
 import usePostUsersList from "../../hooks/usePostUsersList";
-import { getComments } from "../../services/postsApi";
+import { getComments, recordImpression } from "../../services/postsApi";
 import {
   buildPostShareText,
   copyPostLink,
@@ -65,6 +65,18 @@ export default function PostDetailModal({
   const [showRepostModal, setShowRepostModal] = useState(false);
   const [reposting, setReposting] = useState(false);
   const { showLikers, usersListModalProps } = usePostUsersList();
+
+  useEffect(() => {
+    if (!isOpen || !post?.id) return;
+    if (
+      post.authorId != null &&
+      currentUserId != null &&
+      String(post.authorId) === String(currentUserId)
+    ) {
+      return;
+    }
+    recordImpression(post.id);
+  }, [isOpen, post?.id, post?.authorId, currentUserId]);
 
   useEffect(() => {
     if (!isOpen || !post) return;

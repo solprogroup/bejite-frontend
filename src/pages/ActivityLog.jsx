@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -10,10 +10,11 @@ import {
   Video,
   Search,
   MessageCircle,
-  Share2,
   Bookmark,
   Heart,
-  MoreHorizontal
+  MoreHorizontal,
+  Eye,
+  Share2,
 } from "lucide-react";
 import NewsFeedLayout from "../components/layout/NewsFeedLayout";
 import {
@@ -118,6 +119,8 @@ const ActivityLogPostCard = ({
   onDelete,
   currentUserId,
   currentUserPhotoUrl,
+  periodMetrics = null,
+  metricsPeriod = "all",
 }) => {
   const reduxUser = useSelector((state) => state.auth?.user);
   const syncedCurrentUserPhoto = useMemo(() => {
@@ -428,31 +431,108 @@ const ActivityLogPostCard = ({
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500">
-        {post.likesCount > 0 && (
+        {(Number(
+          periodMetrics?.impressions ?? post.impressionsCount,
+        ) || 0) > 0 && (
+          <span className="inline-flex items-center gap-1 font-medium text-gray-600">
+            <Eye className="w-3.5 h-3.5" aria-hidden />
+            {(
+              Number(periodMetrics?.impressions ?? post.impressionsCount) || 0
+            ).toLocaleString()}{" "}
+            {(Number(periodMetrics?.impressions ?? post.impressionsCount) || 0) ===
+            1
+              ? "view"
+              : "views"}
+            {periodMetrics && metricsPeriod !== "all"
+              ? metricsPeriod === "week"
+                ? " (7d)"
+                : " (30d)"
+              : ""}
+          </span>
+        )}
+        {(Number(periodMetrics?.likes ?? post.likesCount) || 0) > 0 && (
           <button
             onClick={handleShowLikers}
             className="hover:text-[#16730F] transition-colors font-medium"
           >
-            {post.likesCount} {post.likesCount === 1 ? "Like" : "Likes"}
+            {(Number(periodMetrics?.likes ?? post.likesCount) || 0).toLocaleString()}{" "}
+            {(Number(periodMetrics?.likes ?? post.likesCount) || 0) === 1
+              ? "Like"
+              : "Likes"}
+            {periodMetrics && metricsPeriod !== "all"
+              ? metricsPeriod === "week"
+                ? " (7d)"
+                : " (30d)"
+              : ""}
           </button>
         )}
-        {post.commentsCount > 0 && (
+        {(Number(periodMetrics?.comments ?? post.commentsCount) || 0) > 0 && (
           <button
             onClick={toggleComments}
             className="hover:text-[#16730F] transition-colors font-medium"
           >
-            {post.commentsCount} comment{post.commentsCount > 1 ? "s" : ""}
+            {(
+              Number(periodMetrics?.comments ?? post.commentsCount) || 0
+            ).toLocaleString()}{" "}
+            comment
+            {(Number(periodMetrics?.comments ?? post.commentsCount) || 0) > 1
+              ? "s"
+              : ""}
+            {periodMetrics && metricsPeriod !== "all"
+              ? metricsPeriod === "week"
+                ? " (7d)"
+                : " (30d)"
+              : ""}
           </button>
         )}
-        {post.sharesCount > 0 && (
+        {(Number(periodMetrics?.shares ?? post.sharesCount) || 0) > 0 && (
           <button
             onClick={handleShowSharers}
             className="hover:text-[#16730F] transition-colors font-medium"
           >
-            {post.sharesCount} share{post.sharesCount > 1 ? "s" : ""}
+            {(
+              Number(periodMetrics?.shares ?? post.sharesCount) || 0
+            ).toLocaleString()}{" "}
+            share
+            {(Number(periodMetrics?.shares ?? post.sharesCount) || 0) > 1
+              ? "s"
+              : ""}
+            {periodMetrics && metricsPeriod !== "all"
+              ? metricsPeriod === "week"
+                ? " (7d)"
+                : " (30d)"
+              : ""}
           </button>
         )}
       </div>
+
+      {periodMetrics && (
+        <div className="rounded-xl border border-[#D5E5DD] bg-[#F3F8F2] px-3 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#16730F] mb-1.5">
+            {metricsPeriod === "week"
+              ? "Last 7 days"
+              : metricsPeriod === "month"
+                ? "Last 30 days"
+                : "All time"}{" "}
+            · post metrics
+          </p>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            {[
+              { label: "Views", value: periodMetrics.impressions },
+              { label: "Likes", value: periodMetrics.likes },
+              { label: "Comments", value: periodMetrics.comments },
+              { label: "Shares", value: periodMetrics.shares },
+            ].map((item) => (
+              <div key={item.label}>
+                <p className="text-sm font-bold text-[#1A3E32]">
+                  {(Number(item.value) || 0).toLocaleString()}
+                </p>
+                <p className="text-[10px] text-gray-500 font-medium">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <PostActions
         liked={liked}
@@ -650,6 +730,11 @@ export default function ActivityLog() {
 
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [metricsPeriod, setMetricsPeriod] = useState("all");
+  const [filtersHidden, setFiltersHidden] = useState(false);
+  const filtersBarRef = useRef(null);
+  const filtersLastScrollTopRef = useRef(0);
+  const filtersHiddenRef = useRef(false);
 
   const [posts, setPosts] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -657,8 +742,13 @@ export default function ActivityLog() {
     postsPublished: 0,
     likesGiven: 0,
     commentsWritten: 0,
-    impressionsReceived: 0
+    impressionsReceived: 0,
+    likesReceived: 0,
+    commentsReceived: 0,
+    sharesReceived: 0,
+    posts: [],
   });
+  const [metricsLoading, setMetricsLoading] = useState(false);
 
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(false);
@@ -681,22 +771,105 @@ export default function ActivityLog() {
   ];
 
   useEffect(() => {
-    fetchMetrics();
     fetchPosts(true);
     fetchJobs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mergedUser?.id, isRecruiter]);
 
-  const fetchMetrics = async () => {
-    try {
-      const data = await getMyMetrics();
-      if (data) {
-        setMetrics(data);
+  const loadedPostIdsKey = useMemo(
+    () => posts.map((p) => String(p.id)).join(","),
+    [posts],
+  );
+
+  useEffect(() => {
+    if (!mergedUser?.id) return undefined;
+
+    let cancelled = false;
+    const postIds = loadedPostIdsKey
+      ? loadedPostIdsKey.split(",").filter(Boolean)
+      : [];
+
+    const run = async () => {
+      try {
+        setMetricsLoading(true);
+        const data = await getMyMetrics(metricsPeriod, {
+          postIds: postIds.length ? postIds.slice(0, 100) : undefined,
+          limit: Math.min(Math.max(postIds.length || 50, 50), 100),
+        });
+        if (cancelled || !data) return;
+        setMetrics({
+          postsPublished: data.postsPublished || 0,
+          likesGiven: data.likesGiven || 0,
+          commentsWritten: data.commentsWritten || 0,
+          impressionsReceived: data.impressionsReceived || 0,
+          likesReceived: data.likesReceived || 0,
+          commentsReceived: data.commentsReceived || 0,
+          sharesReceived: data.sharesReceived || 0,
+          posts: Array.isArray(data.posts) ? data.posts : [],
+        });
+      } catch (err) {
+        if (!cancelled) console.error("Error fetching metrics:", err);
+      } finally {
+        if (!cancelled) setMetricsLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching metrics:", err);
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [metricsPeriod, mergedUser?.id, loadedPostIdsKey]);
+
+  const periodPostMetricsById = useMemo(() => {
+    const map = new Map();
+    for (const row of metrics.posts || []) {
+      if (row?.postId) map.set(String(row.postId), row);
     }
-  };
+    return map;
+  }, [metrics.posts]);
+
+  useEffect(() => {
+    const bar = filtersBarRef.current;
+    const scroller = bar?.closest(".nfl-scroll");
+    if (!scroller) return;
+
+    filtersHiddenRef.current = false;
+    filtersLastScrollTopRef.current = scroller.scrollTop;
+    setFiltersHidden(false);
+
+    let frame = 0;
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const top = scroller.scrollTop;
+        const delta = top - filtersLastScrollTopRef.current;
+        filtersLastScrollTopRef.current = top;
+
+        if (Math.abs(delta) < 8) return;
+
+        if (filtersHiddenRef.current) {
+          if (delta < 0) {
+            filtersHiddenRef.current = false;
+            setFiltersHidden(false);
+          }
+          return;
+        }
+
+        if (delta > 0 && top > 48) {
+          filtersHiddenRef.current = true;
+          setFiltersHidden(true);
+        }
+      });
+    };
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   const fetchPosts = async (reset = false) => {
     if (!mergedUser?.id) return;
@@ -889,46 +1062,126 @@ export default function ActivityLog() {
   return (
     <NewsFeedLayout classes={false} showSidebars={false}>
       <div className="h-full min-h-0 w-full max-w-screen-xl mx-auto flex flex-col bg-[#F8FAFC]">
-        {/* Header Section */}
-        <div className="bg-[#1A3E32] px-6 py-8 flex-shrink-0 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-          <div className="max-w-4xl mx-auto relative z-10 flex items-center gap-6">
-            <img 
-              src={currentUserImage} 
-              alt="Profile" 
-              className="w-20 h-20 rounded-full border-4 border-white/20 shadow-xl object-cover bg-white" 
-            />
-            <div>
-              <h1 className="text-white font-bold text-2xl sm:text-3xl tracking-tight">Your Activity Log</h1>
-              <p className="text-green-100 text-sm sm:text-base mt-1 font-medium opacity-90">
-                Manage and view everything you've shared on Bejite
-              </p>
+        <div className="flex-1 min-h-0 overflow-y-auto nfl-scroll scroll-smooth">
+          {/* Header Section */}
+          <div className="bg-[#1A3E32] px-6 py-8 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+            <div className="max-w-4xl mx-auto relative z-10 flex items-center gap-6">
+              <img 
+                src={currentUserImage} 
+                alt="Profile" 
+                className="w-20 h-20 rounded-full border-4 border-white/20 shadow-xl object-cover bg-white" 
+              />
+              <div>
+                <h1 className="text-white font-bold text-2xl sm:text-3xl tracking-tight">Your Activity Log</h1>
+                <p className="text-green-100 text-sm sm:text-base mt-1 font-medium opacity-90">
+                  Manage and view everything you've shared on Bejite
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto nfl-scroll scroll-smooth">
           <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
             
             {/* Metrics Dashboard */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Posts Published", value: metrics.postsPublished, icon: FileText, color: "bg-blue-50 text-blue-600 border-blue-100" },
-                { label: "Likes Given", value: metrics.likesGiven, icon: Heart, color: "bg-red-50 text-red-600 border-red-100" },
-                { label: "Comments Written", value: metrics.commentsWritten, icon: MessageCircle, color: "bg-green-50 text-green-600 border-green-100" },
-                { label: "Impressions", value: metrics.impressionsReceived, icon: Share2, color: "bg-purple-50 text-purple-600 border-purple-100" },
-              ].map((stat, i) => (
-                <div key={i} className={`bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col`}>
-                  <div className={`w-8 h-8 rounded-lg ${stat.color} flex items-center justify-center mb-3`}>
-                    <stat.icon className="w-4 h-4" />
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900">{(Number(stat.value) || 0).toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1 font-medium">{stat.label}</p>
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-[#1A3E32]">Post performance</h2>
+                  <p className="text-xs text-gray-500">
+                    Engagement on your posts
+                    {metricsPeriod === "week"
+                      ? " over the last 7 days"
+                      : metricsPeriod === "month"
+                        ? " over the last 30 days"
+                        : " (all time)"}
+                  </p>
                 </div>
-              ))}
+                <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1 shadow-sm self-start">
+                  {[
+                    { value: "all", label: "All time" },
+                    { value: "week", label: "Last 7 days" },
+                    { value: "month", label: "Last 30 days" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setMetricsPeriod(opt.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        metricsPeriod === opt.value
+                          ? "bg-[#1A3E32] text-white"
+                          : "text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 transition-opacity ${
+                  metricsLoading ? "opacity-60" : "opacity-100"
+                }`}
+              >
+                {[
+                  {
+                    label: "Posts Published",
+                    value: metrics.postsPublished,
+                    icon: FileText,
+                    color: "bg-blue-50 text-blue-600 border-blue-100",
+                  },
+                  {
+                    label: "Likes Received",
+                    value: metrics.likesReceived,
+                    icon: Heart,
+                    color: "bg-red-50 text-red-600 border-red-100",
+                  },
+                  {
+                    label: "Comments Received",
+                    value: metrics.commentsReceived,
+                    icon: MessageCircle,
+                    color: "bg-green-50 text-green-600 border-green-100",
+                  },
+                  {
+                    label: "Shares Received",
+                    value: metrics.sharesReceived,
+                    icon: Share2,
+                    color: "bg-amber-50 text-amber-600 border-amber-100",
+                  },
+                  {
+                    label: "Views",
+                    value: metrics.impressionsReceived,
+                    icon: Eye,
+                    color: "bg-purple-50 text-purple-600 border-purple-100",
+                  },
+                ].map((stat, i) => (
+                  <div
+                    key={i}
+                    className={`bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-lg ${stat.color} flex items-center justify-center mb-3`}
+                    >
+                      <stat.icon className="w-4 h-4" />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {(Number(stat.value) || 0).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1 font-medium">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 sticky top-2 z-20">
+            <div
+              ref={filtersBarRef}
+              className={`bg-white rounded-2xl p-2 shadow-sm border border-gray-100 sticky top-2 z-20 transition-all duration-300 ease-out ${
+                filtersHidden
+                  ? "-translate-y-[140%] opacity-0 pointer-events-none"
+                  : "translate-y-0 opacity-100"
+              }`}
+            >
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* Filter pills */}
                 <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide flex-1">
@@ -990,6 +1243,8 @@ export default function ActivityLog() {
                         post={post}
                         currentUserId={mergedUser?.id}
                         currentUserPhotoUrl={currentUserImage}
+                        periodMetrics={periodPostMetricsById.get(String(post.id)) || null}
+                        metricsPeriod={metricsPeriod}
                         onLike={handleLike}
                         onSave={handleSave}
                         onShare={handleShare}

@@ -269,6 +269,13 @@ export default function RecruitmentLeft() {
           {filteredNavItems.map(({ icon: Icon, label, iconClassName }, idx) => (
             <div
               key={idx}
+              data-tour-id={
+                label === "Milestones"
+                  ? "milestones"
+                  : label === "AdPro"
+                    ? "adpro"
+                    : undefined
+              }
               className="flex items-center space-x-3 cursor-pointer w-full p-2 hover:bg-[#15600b] rounded-lg transition-colors duration-200"
               onClick={() => handleNavClick(label)}
             >

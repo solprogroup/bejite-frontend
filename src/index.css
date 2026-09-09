@@ -1,14 +1,12 @@
 @import "tailwindcss";
 
-/* .custom-scroll::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar {
   display: none;
-} */
-
-/* 
-.custom-scroll {
+}
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-} */
+}
 
 body {
   font-family: "Montserrat";

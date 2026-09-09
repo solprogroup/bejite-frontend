@@ -25,6 +25,7 @@ import {
   getComments,
   voteOnPoll,
 } from "../../services/postsApi";
+import usePostImpression from "../../hooks/usePostImpression";
 import { getPostDetailPath } from "../../utils/postNavigation";
 import {
   buildPostShareText,
@@ -64,6 +65,7 @@ import PostCommentsSection from "../PostCommentsSection";
 import FormattedPostBody from "../feed/FormattedPostBody";
 import { normalizeHashtag } from "../../utils/postBodyFormat";
 import AdCard from "../Ads/AdCard";
+import PeopleYouMayKnowSlider from "../feed/PeopleYouMayKnowSlider";
 import { getAdProFeedAds, trackAdCampaignEvent, likeAdCampaign, unlikeAdCampaign, saveAdCampaign, unsaveAdCampaign } from "../../services/adProApi";
 
 const FEED_PAGE_SIZE = 20;
@@ -561,6 +563,16 @@ export default function RecruitmentMiddle() {
                   onClose={handleDismissAd}
                 />
               )}
+
+              {/* People You May Know slider (Facebook-style, shown after 4 posts) */}
+              {feedMode === "home" &&
+                ((index + 1) === 4 ||
+                  (posts.length < 4 && index === posts.length - 1)) && (
+                  <PeopleYouMayKnowSlider
+                    currentUserId={mergedUser?.id}
+                    currentUser={mergedUser}
+                  />
+                )}
             </React.Fragment>
           ))}
           {nextCursor && (
@@ -632,6 +644,11 @@ const RecruitmentPostCard = ({
 
   const isOwner = String(post.authorId) === String(currentUserId);
   const isRepost = Boolean(post.repostedBy);
+  const impressionRef = usePostImpression({
+    postId: post.id,
+    authorId: post.authorId,
+    currentUserId,
+  });
   const [liked, setLiked] = useState(post.likedByMe === true);
   const [saved, setSaved] = useState(post.savedByMe === true);
   const [sharedByMe, setSharedByMe] = useState(post.sharedByMe === true);
@@ -903,7 +920,10 @@ const RecruitmentPostCard = ({
     : getAuthorProfileImageUrl(post.author);
 
   return (
-    <div className="max-w-3xl p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 bg-white shadow rounded-2xl">
+    <div
+      ref={impressionRef}
+      className="max-w-3xl p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 bg-white shadow rounded-2xl"
+    >
       <RepostIntro
         repostedBy={post.repostedBy}
         quote={post.repostQuote}
