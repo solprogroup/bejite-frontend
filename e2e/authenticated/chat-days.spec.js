@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test';
+import {
+  dismissFeatureTourIfOpen,
+  markToursSeen,
+} from '../helpers/featureTour.js';
 
 const hasCreds = Boolean(
   process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD,
@@ -11,6 +15,9 @@ test.describe('chat day separators', () => {
     page,
   }) => {
     await page.goto('/chats');
+    await markToursSeen(page);
+    await dismissFeatureTourIfOpen(page);
+
     await expect(page.getByText('Loading conversations...').first()).toBeHidden({
       timeout: 40_000,
     });
@@ -18,6 +25,7 @@ test.describe('chat day separators', () => {
     const desktop = page.locator('div.hidden.lg\\:grid');
     const conversation = desktop.locator('.rounded-xl.cursor-pointer').first();
     await expect(conversation).toBeVisible({ timeout: 20_000 });
+    await dismissFeatureTourIfOpen(page);
     await conversation.click();
 
     const thread = desktop.locator('[data-chat-messages]');
