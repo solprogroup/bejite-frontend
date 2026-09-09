@@ -64,6 +64,7 @@ import PostCommentsSection from "../PostCommentsSection";
 import FormattedPostBody from "../feed/FormattedPostBody";
 import { normalizeHashtag } from "../../utils/postBodyFormat";
 import AdCard from "../Ads/AdCard";
+import PeopleYouMayKnowSlider from "../feed/PeopleYouMayKnowSlider";
 import { getAdProFeedAds, trackAdCampaignEvent, likeAdCampaign, unlikeAdCampaign, saveAdCampaign, unsaveAdCampaign } from "../../services/adProApi";
 
 const FEED_PAGE_SIZE = 20;
@@ -561,6 +562,16 @@ export default function RecruitmentMiddle() {
                   onClose={handleDismissAd}
                 />
               )}
+
+              {/* People You May Know slider (Facebook-style, shown after 4 posts) */}
+              {feedMode === "home" &&
+                ((index + 1) === 4 ||
+                  (posts.length < 4 && index === posts.length - 1)) && (
+                  <PeopleYouMayKnowSlider
+                    currentUserId={mergedUser?.id}
+                    currentUser={mergedUser}
+                  />
+                )}
             </React.Fragment>
           ))}
           {nextCursor && (
