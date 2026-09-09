@@ -726,6 +726,7 @@ const NewsFeedHeader = ({ user: propUser }) => {
 
   const renderNavIcon = (name, { onClick, compact = false } = {}) => (
     <div
+      data-tour-id={name}
       className={`relative flex h-7 w-7 lg:h-8 lg:w-8 shrink-0 items-center justify-center rounded-full ${
         isIconActive(name) ? "bg-[#1A3E32]/10" : ""
       } ${onClick ? "cursor-pointer" : ""}`}
@@ -810,6 +811,18 @@ const NewsFeedHeader = ({ user: propUser }) => {
   useEffect(() => {
     document.body.style.overflow = isSidebarOpen ? "hidden" : "auto";
   }, [isSidebarOpen]);
+
+  // Feature tour can open/close the mobile drawer so nav targets are visible.
+  useEffect(() => {
+    const openNav = () => setIsSidebarOpen(true);
+    const closeNav = () => setIsSidebarOpen(false);
+    window.addEventListener("bejite:open-mobile-nav", openNav);
+    window.addEventListener("bejite:close-mobile-nav", closeNav);
+    return () => {
+      window.removeEventListener("bejite:open-mobile-nav", openNav);
+      window.removeEventListener("bejite:close-mobile-nav", closeNav);
+    };
+  }, []);
 
   return (
     <header ref={headerRootRef} className="bg-[#F5F5F5] w-full relative z-50">
@@ -949,12 +962,14 @@ const NewsFeedHeader = ({ user: propUser }) => {
           {menuItems.map((name, i) => (
             <div key={i} className="relative flex items-center gap-1">
               {name === "notifications" ? (
-                <NotificationDropdown
-                  variant="header"
-                  unreadCount={notificationCount}
-                  onUnreadChange={setNotificationCount}
-                  isActive={isIconActive(name)}
-                />
+                <div data-tour-id="notifications">
+                  <NotificationDropdown
+                    variant="header"
+                    unreadCount={notificationCount}
+                    onUnreadChange={setNotificationCount}
+                    isActive={isIconActive(name)}
+                  />
+                </div>
               ) : (
                 renderNavIcon(name, { onClick: () => handleIconClick(name) })
               )}
@@ -1006,6 +1021,7 @@ const NewsFeedHeader = ({ user: propUser }) => {
                     <button
                       type="button"
                       ref={roleMenuButtonRef}
+                      data-tour-id="role-menu"
                       onClick={() => {
                         if (isDropdownOpen) {
                           setIsDropdownOpen(false);
@@ -1226,9 +1242,11 @@ const NewsFeedHeader = ({ user: propUser }) => {
                   </span>
                 </div>
                 <div
+                  data-tour-id="milestones"
                   className="flex items-center gap-2 cursor-pointer"
                   onClick={() => {
                     navigate("/milestones");
+                    setIsSidebarOpen(false);
                   }}
                 >
                   <div className="rounded-[30px] p-1.5 border-2 border-[#16730F]">
@@ -1237,7 +1255,6 @@ const NewsFeedHeader = ({ user: propUser }) => {
                       size={16}
                     />
                   </div>
-                  {/* {renderNavIcon("milestones", { compact: true })} */}
                   <span className="font-medium text-sm text-[#1A3E32]">
                     Milestones
                   </span>

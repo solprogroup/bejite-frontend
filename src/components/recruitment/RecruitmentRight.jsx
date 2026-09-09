@@ -150,6 +150,7 @@ function RecruitmentRight() {
             {RECRUITMENT_RIGHT_LINKS.map((item) => (
               <div
                 key={item.path}
+                data-tour-id={item.tourId || undefined}
                 className="flex items-center space-x-3 hover:bg-white/5 p-2 rounded-lg transition-all duration-200"
                 onClick={() => navigate(item.path)}
                 onKeyDown={(e) => e.key === "Enter" && navigate(item.path)}

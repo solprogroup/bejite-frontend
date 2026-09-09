@@ -93,6 +93,7 @@ export default function RecruitmentRightMobileMenu({ onNavigate }) {
           <button
             key={item.path}
             type="button"
+            data-tour-id={item.tourId || undefined}
             onClick={() => go(item.path)}
             className="flex items-center gap-2 w-full px-2 py-2.5 rounded-lg text-[#1A3E32] hover:bg-gray-50 transition-colors text-left"
           >

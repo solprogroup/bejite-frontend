@@ -9,6 +9,7 @@ import AuthBootstrap from "./components/AuthBootstrap.jsx";
 import VerifiedBadgeSync from "./components/VerifiedBadgeSync.jsx";
 import ProfileCompletionReminder from "./components/ProfileCompletionReminder.jsx";
 import JobseekerHiringProcessReminder from "./components/JobseekerHiringProcessReminder.jsx";
+import FeatureTour from "./components/FeatureTour.jsx";
 import PageLoader from "./components/PageLoader.jsx";
 import AppRoutes from "./app/routes/AppRoutes.jsx";
 
@@ -31,6 +32,7 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <AppRoutes />
             </Suspense>
+            <FeatureTour />
             <ProfileCompletionReminder />
             <JobseekerHiringProcessReminder />
             <ToastContainer
