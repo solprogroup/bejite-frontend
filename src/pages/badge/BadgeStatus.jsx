@@ -25,18 +25,18 @@ import {
 import { getUser, mergeAuthUsers } from "../../utils/tokenManager";
 import { userHasVerifiedBadge } from "../../utils/verifiedBadge";
 
-const BADGE_BENEFITS = [
+const JOBSEEKER_BENEFITS = [
   {
     icon: VerifiedBadgeIcon,
     title: "Verified Badge",
     description:
-      "A verified badge appears on your profile, building trust with recruiters and connections.",
+      "A verified badge appears on your profile, building credibility with recruiters and connections.",
   },
   {
     icon: FileText,
-    title: "Monthly Employment Report",
+    title: "Weekly & Monthly Job Application Report",
     description:
-      "Receive a monthly employment insights report with hiring trends and career recommendations.",
+      "Receive a weekly & monthly job application insights report.",
   },
   {
     icon: Calendar,
@@ -44,7 +44,7 @@ const BADGE_BENEFITS = [
     description:
       "Access career fairs, networking conferences, and seminars reserved for verified subscribers.",
   },
-  {
+  /*{
     icon: Star,
     title: "Featured Profile",
     description:
@@ -55,11 +55,32 @@ const BADGE_BENEFITS = [
     title: "Exclusive Content",
     description:
       "Access to premium career resources and interview prep guides.",
+  },*/
+];
+
+const RECRUITER_BENEFITS = [
+  {
+    icon: VerifiedBadgeIcon,
+    title: "Verified Recruiter Badge",
+    description:
+      "A verified badge appears on your profile, building credibility with jobseekers and connections.",
+  },
+  {
+    icon: FileText,
+    title: "Weekly & Monthly Job Posting Report",
+    description:
+      "Receive a weekly & monthly job posting insights report.",
+  },
+  {
+    icon: Calendar,
+    title: "Exclusive Partner Events",
+    description:
+      "Access career fairs, networking conferences, and seminars reserved for verified recruiters.",
   },
 ];
 
 const RECRUITER_NOTE =
-  "Recruiters get the Verified Recruiter badge by uploading an ID, paying ₦5,000 once, and passing admin review. ASE plans do not include the badge.";
+  "Recruiters get the Verified Recruiter badge by uploading an ID, paying ₦5,000 once, and passing admin review.";
 
 export default function BadgeStatus() {
   const navigate = useNavigate();
@@ -249,7 +270,7 @@ export default function BadgeStatus() {
                   ? "Payment received. An admin is reviewing your document. You will unlock badge-holder access once it is approved."
                   : isRecruiter
                     ? RECRUITER_NOTE
-                    : "Pay once to unlock your verified badge, employment reports, and exclusive events."}
+                    : "Pay once to unlock your verified badge, job application reports, and exclusive events."}
               </p>
               <button
                 type="button"
@@ -291,24 +312,35 @@ export default function BadgeStatus() {
             )}
 
             <div className="space-y-3">
-              <p className="text-sm font-bold text-gray-800">What Verified Subscribers Get</p>
+              <p className="text-sm font-bold text-gray-800">
+                {isRecruiter
+                  ? "What Verified Recruiters Get"
+                  : "What Verified Subscribers Get"}
+              </p>
               <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
-                {BADGE_BENEFITS.map((benefit) => {
-                  const Icon = benefit.icon;
-                  return (
-                    <div key={benefit.title} className="flex items-start gap-3 sm:gap-4 p-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#1A3E32]/10 flex items-center justify-center shrink-0">
-                        <Icon className="w-4 h-4 text-[#1A3E32]" />
+                {(isRecruiter ? RECRUITER_BENEFITS : JOBSEEKER_BENEFITS).map(
+                  (benefit) => {
+                    const Icon = benefit.icon;
+                    return (
+                      <div
+                        key={benefit.title}
+                        className="flex items-start gap-3 sm:gap-4 p-4"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-[#1A3E32]/10 flex items-center justify-center shrink-0">
+                          <Icon className="w-4 h-4 text-[#1A3E32]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-gray-800">
+                            {benefit.title}
+                          </p>
+                          <p className="text-xs text-gray-500 leading-relaxed mt-0.5 break-words">
+                            {benefit.description}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-gray-800">{benefit.title}</p>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-0.5 break-words">
-                          {benefit.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  },
+                )}
               </div>
             </div>
 

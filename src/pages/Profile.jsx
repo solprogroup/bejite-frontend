@@ -56,6 +56,8 @@ import ProfileConnectActions from "../components/ProfileConnectActions";
 import ProfilePostsSection from "../components/ProfilePostsSection";
 import DisplayNameWithBadge from "../components/DisplayNameWithBadge";
 import MutualConnectionsModal from "../components/MutualConnectionsModal";
+import ProfileVerifiedBadgeCard from "../components/profile/ProfileVerifiedBadgeCard";
+import { userHasVerifiedBadge } from "../utils/verifiedBadge";
 
 import { formatCompactCount as formatConnectionCount } from "../utils/formatCompactCount";
 
@@ -1040,6 +1042,12 @@ const Profile = () => {
 
           {/* Sidebar Column – appears before posts on mobile, sticky floating right column on desktop */}
           <div className="lg:col-span-1 space-y-5 order-2 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:overflow-x-hidden nfl-scroll lg:pr-1">
+            {isViewingOwnProfile &&
+              !userHasVerifiedBadge(profileData) &&
+              !userHasVerifiedBadge(user) && (
+                <ProfileVerifiedBadgeCard isRecruiter={isRecruiterProfile} />
+              )}
+
             {/* Mutual Connections Bento Card */}
             {!isViewingOwnProfile &&
               Number(profileData.mutualConnectionCount) > 0 && (
