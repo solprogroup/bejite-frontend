@@ -28,6 +28,7 @@ import { getAuthorSubtitle } from "../../utils/authorDisplay";
 import DisplayNameWithBadge from "../DisplayNameWithBadge";
 import { OriginalPostNest, RepostIntro } from "./RepostChrome";
 import UsersListModal from "../UsersListModal";
+import usePostImpression from "../../hooks/usePostImpression";
 import usePostUsersList from "../../hooks/usePostUsersList";
 
 import {
@@ -254,6 +255,11 @@ const PostCard = ({
   const isOwner = String(post.authorId) === String(currentUserId);
   const isRepost = Boolean(post.repostedBy);
   const showOriginalEngagement = isDetailView || !isRepost;
+  const impressionRef = usePostImpression({
+    postId: post.id,
+    authorId: post.authorId,
+    currentUserId,
+  });
   const [showComments, setShowComments] = useState(defaultShowComments);
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
@@ -465,6 +471,7 @@ const PostCard = ({
 
   return (
     <div
+      ref={impressionRef}
       id={isDetailView ? undefined : `post-${post.feedItemKey || post.id}`}
       className={
         isDetailView

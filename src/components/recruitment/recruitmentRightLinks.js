@@ -10,12 +10,14 @@ export const RECRUITMENT_RIGHT_LINKS = [
     icon: "/assets/images/task-square.svg",
     mobileIcon: "/assets/images/activity-log-nav.svg",
     path: "/activity-logs",
+    tourId: "activity-log",
   },
   {
     label: "Badge Status",
     icon: "/assets/images/award.svg",
     mobileIcon: "/assets/images/badge-nav.svg",
     path: "/badge",
+    tourId: "badge-status",
   },
   {
     label: "Account Settings",

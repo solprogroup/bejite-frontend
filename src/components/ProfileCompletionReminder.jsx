@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaTimes } from 'react-icons/fa';
@@ -77,6 +77,28 @@ function readDismissedForUser(userId) {
   }
 }
 
+function isFeatureTourActive() {
+  try {
+    return sessionStorage.getItem('bejite_feature_tour_active') === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function useFeatureTourSuppressed() {
+  const [suppressed, setSuppressed] = useState(() => isFeatureTourActive());
+
+  useEffect(() => {
+    const onTour = (e) => {
+      setSuppressed(Boolean(e?.detail?.active) || isFeatureTourActive());
+    };
+    window.addEventListener('bejite:feature-tour', onTour);
+    return () => window.removeEventListener('bejite:feature-tour', onTour);
+  }, []);
+
+  return suppressed;
+}
+
 /**
  * Fixed corner popup reminding authenticated users to update/complete their profile.
  *
@@ -91,6 +113,7 @@ export default function ProfileCompletionReminder() {
   const reduxToken = useSelector((state) => state.auth?.token);
   const reduxUser = useSelector((state) => state.auth?.user);
   const [dismissed, setDismissed] = useState(false);
+  const tourActive = useFeatureTourSuppressed();
 
   const token = reduxToken || getAccessToken() || '';
   const authenticated = Boolean(token) || isAuthenticated();
@@ -119,6 +142,7 @@ export default function ProfileCompletionReminder() {
     if (!role) return false;
     if (profileCompleted === true) return false;
     if (dismissedForUser) return false;
+    if (tourActive) return false;
     return true;
   }, [
     authenticated,
@@ -127,6 +151,7 @@ export default function ProfileCompletionReminder() {
     role,
     profileCompleted,
     dismissedForUser,
+    tourActive,
   ]);
 
   const handleDismiss = () => {

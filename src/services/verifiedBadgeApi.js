@@ -52,3 +52,11 @@ export const openMonthlyReport = async (reportId) => {
   const response = await axiosInstance.get(`${API}/reports/${reportId}`);
   return response.data;
 };
+
+export const getEmploymentMetrics = async (scope = 'month', options = {}) => {
+  const response = await axiosInstance.get(`${API}/employment-metrics`, {
+    params: { scope },
+    signal: options.signal,
+  });
+  return response.data;
+};

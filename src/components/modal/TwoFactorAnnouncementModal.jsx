@@ -15,10 +15,13 @@ import { getUser } from "../../utils/tokenManager";
 import { TwoFactorModal } from "./confirmBadgeModal";
 import { toast } from "react-toastify";
 
-const checkIsMobile = () => {
-  if (typeof window === "undefined") return false;
-  return window.innerWidth < 640;
-};
+function isFeatureTourActive() {
+  try {
+    return sessionStorage.getItem("bejite_feature_tour_active") === "true";
+  } catch {
+    return false;
+  }
+}
 
 export default function TwoFactorAnnouncementModal({
   forceShow = false,
@@ -31,22 +34,40 @@ export default function TwoFactorAnnouncementModal({
   // On mobile screens, skip the animation stage completely and show "Protect Account with 2FA" directly
   const [stage, setStage] = useState(() => (checkIsMobile() ? "details" : "intro"));
   const [setupModalOpen, setSetupModalOpen] = useState(false);
+  const [tourActive, setTourActive] = useState(() => isFeatureTourActive());
+  /** Show 2FA after the feature tour finishes, if we already decided it should open. */
+  const pendingOpenRef = useRef(false);
 
   const lottieContainerRef = useRef(null);
   const animInstanceRef = useRef(null);
 
-  // Keep mobile state updated on viewport resize
+  const tryOpen = () => {
+    if (isFeatureTourActive()) {
+      pendingOpenRef.current = true;
+      setIsOpen(false);
+      return;
+    }
+    pendingOpenRef.current = false;
+    setIsOpen(true);
+    setStage("intro");
+  };
+
+  // Stay in sync with the first-timer feature tour
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 640;
-      setIsMobile(mobile);
-      if (mobile && stage === "intro") {
-        setStage("details");
+    const onTour = (e) => {
+      const active = Boolean(e?.detail?.active) || isFeatureTourActive();
+      setTourActive(active);
+      if (active) {
+        setIsOpen(false);
+      } else if (pendingOpenRef.current) {
+        pendingOpenRef.current = false;
+        setIsOpen(true);
+        setStage("intro");
       }
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [stage]);
+    window.addEventListener("bejite:feature-tour", onTour);
+    return () => window.removeEventListener("bejite:feature-tour", onTour);
+  }, []);
 
   // Check 2FA status from endpoint on mount or when user changes
   useEffect(() => {
@@ -58,8 +79,7 @@ export default function TwoFactorAnnouncementModal({
     setIsMobile(mobile);
 
     if (forceShow || urlForce) {
-      setIsOpen(true);
-      setStage(mobile ? "details" : "intro");
+      tryOpen();
       return;
     }
 
@@ -71,6 +91,7 @@ export default function TwoFactorAnnouncementModal({
       try {
         if (localStorage.getItem(`bejite_2fa_dismissed_${userId}`) === "true") {
           setIsOpen(false);
+          pendingOpenRef.current = false;
           return;
         }
       } catch {
@@ -79,6 +100,7 @@ export default function TwoFactorAnnouncementModal({
     }
 
     let cancelled = false;
+    let openTimer;
 
     // Call endpoint to check if 2FA is enabled
     getTwoFactorStatus()
@@ -88,28 +110,25 @@ export default function TwoFactorAnnouncementModal({
         // If 2FA is already enabled (true), do NOT show the modal
         if (status?.enabled) {
           setIsOpen(false);
+          pendingOpenRef.current = false;
         } else {
           // If 2FA is NOT enabled (false), show the modal for this user
-          const timer = setTimeout(() => {
-            if (!cancelled) {
-              const currentMobile = checkIsMobile();
-              setIsMobile(currentMobile);
-              setIsOpen(true);
-              setStage(currentMobile ? "details" : "intro");
-            }
+          openTimer = setTimeout(() => {
+            if (!cancelled) tryOpen();
           }, 600);
-          return () => clearTimeout(timer);
         }
       })
       .catch((err) => {
         console.warn("Could not check 2FA status:", err?.message);
         if (!cancelled) {
           setIsOpen(false);
+          pendingOpenRef.current = false;
         }
       });
 
     return () => {
       cancelled = true;
+      if (openTimer) clearTimeout(openTimer);
     };
   }, [forceShow]);
 
@@ -214,7 +233,7 @@ export default function TwoFactorAnnouncementModal({
   return (
     <>
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !tourActive && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

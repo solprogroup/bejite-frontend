@@ -213,10 +213,10 @@ export default function AccountSettings() {
         {
           icon: Smartphone,
           iconBg: "bg-purple-50",
-          label: "Two-Factor Authentication",
+          label: "2FA Authentication",
           sublabel: twoFactorEnabled
             ? "Enabled — extra login protection is on"
-            : "Add an extra layer of security",
+            : "Add an extra layer of security to your account",
           onClick: () => setModal("2fa"),
         },
       ],

@@ -27,6 +27,7 @@ import RecruitmentAuditLog from "../../components/recruitment-management/Recruit
 import CandidateFeedbackModal from "../../components/recruitment-management/CandidateFeedbackModal";
 import MoveCandidateModal from "../../components/recruitment-management/MoveCandidateModal";
 import InterviewStagesList from "../../components/recruitment-management/InterviewStagesList";
+import RecruitmentManagementTour from "../../components/recruitment-management/RecruitmentManagementTour";
 import { toast } from "react-toastify";
 import {
   getEmployerDashboard,
@@ -1279,6 +1280,7 @@ export default function RecruitmentManagement() {
           {!routeJobId && !selectedExercise && !showPaywall && !accessLoading && (
             <button
               type="button"
+              data-tour-id="rm-create"
               onClick={handleCreateClick}
               className="inline-flex items-center gap-2 bg-[#16730F] hover:bg-[#125B0C] active:scale-95 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-2xl shadow-md transition-all shrink-0 self-start sm:self-auto"
             >
@@ -1350,6 +1352,7 @@ export default function RecruitmentManagement() {
               )}
 
             <RecruitmentFilterBar
+              tourId="rm-filters"
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               searchPlaceholder="Search recruitments by title or position..."
@@ -1417,7 +1420,10 @@ export default function RecruitmentManagement() {
               </div>
             ) : selectedExercise ? (
               <>
-                <div className="bg-white border border-gray-200 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div
+                  data-tour-id="rm-detail-header"
+                  className="bg-white border border-gray-200 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
                   <div>
                     <div className="flex items-center gap-3 flex-wrap">
                       <h1 className="text-xl sm:text-2xl font-bold text-[#1A3E32] tracking-tight">
@@ -1461,7 +1467,10 @@ export default function RecruitmentManagement() {
               </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div
+                  data-tour-id="rm-stats"
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
+                >
                   <RecruitmentStatCard
                     icon={FaUsers}
                     value={selectedExercise.invited}
@@ -1513,7 +1522,10 @@ export default function RecruitmentManagement() {
                   onReorderStages={handleReorderPipelineStages}
                 />
 
-                <div className="border-b border-gray-200 flex items-center gap-4 sm:gap-6 text-sm font-bold pt-2 overflow-x-auto scrollbar-none -mx-1 px-1">
+                <div
+                  data-tour-id="rm-tabs"
+                  className="border-b border-gray-200 flex items-center gap-4 sm:gap-6 text-sm font-bold pt-2 overflow-x-auto scrollbar-none -mx-1 px-1"
+                >
                   <button
                     type="button"
                     onClick={() => setActiveTab("candidates")}
@@ -1550,7 +1562,7 @@ export default function RecruitmentManagement() {
                 </div>
 
                 {activeTab === "candidates" && (
-                  <div className="space-y-4">
+                  <div data-tour-id="rm-candidates" className="space-y-4">
                     <div>
                       <h2 className="text-lg font-bold text-[#1A3E32]">
                         Candidates
@@ -1737,6 +1749,18 @@ export default function RecruitmentManagement() {
           stages={selectedExercise?.stagesList || []}
           onMoveCandidate={handleMoveCandidateStage}
           submitting={moving}
+        />
+
+        <RecruitmentManagementTour
+          ready={
+            !accessLoading &&
+            !showPaywall &&
+            (selectedExercise
+              ? true
+              : !routeJobId && !listLoading)
+          }
+          view={selectedExercise ? "detail" : "list"}
+          onEnsureCandidatesTab={() => setActiveTab("candidates")}
         />
       </div>
     </NewsFeedLayout>
