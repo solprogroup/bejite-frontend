@@ -238,9 +238,18 @@ const ASESubscriptionDashboard = () => {
     loadStatus();
   }, [loadStatus]);
 
-  const handleDeleteCard = async (cardId) => {
-    if (!window.confirm("Are you sure you want to remove this card?")) return;
+  const handleInitiateCardRemoval = (card) => {
+    navigate("/subscription/cancel", {
+      state: {
+        action: "remove_card",
+        card,
+        subscription,
+        savedCards,
+      },
+    });
+  };
 
+  const handleDeleteCard = async (cardId) => {
     setDeletingCardId(cardId);
     try {
       await deleteSavedCard(cardId);
@@ -592,13 +601,32 @@ const ASESubscriptionDashboard = () => {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => navigate("/subscription-pricing")}
-                className="mt-4 w-full sm:w-auto px-6 py-2.5 bg-[#1A3E32] text-white rounded-lg hover:bg-[#2d5a47] transition-colors font-medium"
-              >
-                {subscription ? "Change Plan" : "Upgrade Now"} →
-              </button>
+              <div className="flex flex-wrap items-center gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => navigate("/subscription-pricing")}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-[#1A3E32] text-white rounded-lg hover:bg-[#2d5a47] transition-colors font-medium cursor-pointer"
+                >
+                  {subscription ? "Change Plan" : "Upgrade Now"} →
+                </button>
+                {subscription && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate("/subscription/cancel", {
+                        state: {
+                          action: "cancel_subscription",
+                          subscription,
+                          savedCards,
+                        },
+                      })
+                    }
+                    className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg transition-colors font-medium text-sm cursor-pointer"
+                  >
+                    Cancel Subscription
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Saved Payment Methods */}
@@ -635,7 +663,7 @@ const ASESubscriptionDashboard = () => {
 
                       <button
                         type="button"
-                        onClick={() => handleDeleteCard(card.id)}
+                        onClick={() => handleInitiateCardRemoval(card)}
                         disabled={deletingCardId === card.id}
                         aria-label={
                           deletingCardId === card.id
@@ -647,7 +675,7 @@ const ASESubscriptionDashboard = () => {
                             ? "Removing..."
                             : "Remove card"
                         }
-                        className="shrink-0 inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="shrink-0 inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {deletingCardId === card.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" aria-hidden />

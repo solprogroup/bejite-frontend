@@ -9,6 +9,8 @@ import {
   ASEPricingPage,
   ASEPaymentCallback,
   ASESubscriptionDashboard,
+  SubscriptionRetentionPage,
+  SubscriptionCancelConfirmPage,
 } from "../lazyPages.js";
 
 export const paymentRoutes = (
@@ -34,6 +36,22 @@ export const paymentRoutes = (
         element={
           <ProtectedRoute redirectMessage="Please log in to view your subscription dashboard.">
             <ASESubscriptionDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/subscription/cancel"
+        element={
+          <ProtectedRoute redirectMessage="Please log in to manage your subscription.">
+            <SubscriptionRetentionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/subscription/cancel-confirm"
+        element={
+          <ProtectedRoute redirectMessage="Please log in to manage your subscription.">
+            <SubscriptionCancelConfirmPage />
           </ProtectedRoute>
         }
       />

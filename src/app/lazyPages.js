@@ -72,6 +72,8 @@ export const TwoFactorRecovery = lazy(() => import("../pages/auth/TwoFactorRecov
 export const ASEPricingPage = lazy(() => import("../pages/employerDashboard/ASEPricingPage.jsx"));
 export const ASEPaymentCallback = lazy(() => import("../pages/employerDashboard/ASEPaymentCallback.jsx"));
 export const ASESubscriptionDashboard = lazy(() => import("../pages/employerDashboard/ASESubscriptionDashboard.jsx"));
+export const SubscriptionRetentionPage = lazy(() => import("../pages/employerDashboard/SubscriptionRetentionPage.jsx"));
+export const SubscriptionCancelConfirmPage = lazy(() => import("../pages/employerDashboard/SubscriptionCancelConfirmPage.jsx"));
 export const BadgeStatus = lazy(() => import("../pages/badge/BadgeStatus.jsx"));
 export const AccountSettings = lazy(() => import("../pages/AccountSettings.jsx"));
 export const ActivityLog = lazy(() => import("../pages/ActivityLog.jsx"));
