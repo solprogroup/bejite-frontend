@@ -128,7 +128,7 @@ export default function JobseekerHiringProcessReminder() {
       aria-live="polite"
       aria-label="Jobseeker hiring process reminder"
       data-testid="jobseeker-hiring-process-reminder"
-      className="fixed bottom-4 right-4 z-[100] w-[min(100vw-2rem,22rem)] rounded-xl border border-[#16730F]/30 bg-white p-4 shadow-lg animate-in fade-in slide-in-from-bottom-3 duration-300"
+      className="fixed bottom-3 right-3 left-3 sm:left-auto sm:right-4 sm:bottom-4 z-[90] sm:w-[22rem] max-w-full rounded-xl border border-[#16730F]/30 bg-white p-3.5 sm:p-4 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
       <div className="flex items-start justify-between gap-2">
         <div>

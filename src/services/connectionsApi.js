@@ -182,7 +182,7 @@ export const removeConnection = async (peerUserId) => {
 export const discoverUsers = async (limit = 20, offset = 0) => {
   try {
     const response = await axiosInstance.get('/api/connections/discover', {
-      params: { limit, offset }
+      params: { limit, offset, _t: Date.now() }
     });
     console.log('discoverUsers response:', response.data);
     return response.data;

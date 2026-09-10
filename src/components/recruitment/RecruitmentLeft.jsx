@@ -317,11 +317,11 @@ export default function RecruitmentLeft() {
             <div className="flex flex-col items-center space-y-2.5 pt-1 w-full">
               {loading ? (
                 /* 3 Professional Shimmer Skeleton Avatars */
-                <div className="flex items-center -space-x-2.5 justify-center py-0.5 animate-pulse">
+                <div className="flex items-center -space-x-3 justify-center py-0.5 animate-pulse">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="relative h-9 w-9 rounded-full border-2 border-[#1A3E32] ring-2 ring-emerald-400/20 bg-white/15 overflow-hidden shadow-md animate-shimmer"
+                      className="relative h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-[#1A3E32] ring-2 ring-emerald-400/20 bg-white/15 overflow-hidden shadow-md animate-shimmer"
                     >
                       <div className="w-full h-full bg-white/10 rounded-full" />
                     </div>
@@ -330,7 +330,7 @@ export default function RecruitmentLeft() {
               ) : (
                 /* 3 Interactive Rotating Overlapping Connection Avatars */
                 <div
-                  className={`flex items-center -space-x-2.5 justify-center py-0.5 transition-all duration-300 ${
+                  className={`flex items-center -space-x-3 justify-center py-0.5 transition-all duration-300 ${
                     isRotating
                       ? "opacity-60 scale-95"
                       : "opacity-100 scale-100"
@@ -357,7 +357,7 @@ export default function RecruitmentLeft() {
                             setShowConnectModal(true);
                           }
                         }}
-                        className="relative h-9 w-9 rounded-full border-2 border-[#1A3E32] ring-2 ring-emerald-400/40 hover:ring-white shadow-md overflow-hidden bg-[#16730F] hover:z-20 focus:z-20 focus:outline-none transition-all duration-200 hover:scale-115 cursor-pointer group"
+                        className="relative h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-[#1A3E32] ring-2 ring-emerald-400/40 hover:ring-white shadow-md overflow-hidden bg-[#16730F] hover:z-20 focus:z-20 focus:outline-none transition-all duration-200 hover:scale-110 cursor-pointer group"
                         title={
                           personId
                             ? `View ${name}'s profile`
@@ -379,14 +379,14 @@ export default function RecruitmentLeft() {
                               }}
                             />
                             <div
-                              className={`hidden h-full w-full bg-gradient-to-br ${gradientClass} items-center justify-center font-bold text-[11px] text-white shadow-inner select-none`}
+                              className={`hidden h-full w-full bg-gradient-to-br ${gradientClass} items-center justify-center font-bold text-xs sm:text-sm text-white shadow-inner select-none`}
                             >
                               <span>{initials}</span>
                             </div>
                           </>
                         ) : (
                           <div
-                            className={`h-full w-full bg-gradient-to-br ${gradientClass} flex items-center justify-center font-bold text-[11px] text-white shadow-inner select-none`}
+                            className={`h-full w-full bg-gradient-to-br ${gradientClass} flex items-center justify-center font-bold text-xs sm:text-sm text-white shadow-inner select-none`}
                           >
                             <span>{initials}</span>
                           </div>
@@ -398,11 +398,8 @@ export default function RecruitmentLeft() {
               )}
 
               <h4 className="text-white font-semibold text-sm tracking-tight">
-                Grow Your Network
+                Suggestions
               </h4>
-              <p className="text-white/70 text-xs leading-relaxed max-w-[180px]">
-                Connect with professionals & peers in your industry.
-              </p>
             </div>
             <button
               type="button"

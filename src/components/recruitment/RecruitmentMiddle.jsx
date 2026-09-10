@@ -64,7 +64,7 @@ import PostCommentsSection from "../PostCommentsSection";
 import FormattedPostBody from "../feed/FormattedPostBody";
 import { normalizeHashtag } from "../../utils/postBodyFormat";
 import AdCard from "../Ads/AdCard";
-import PeopleYouMayKnowSlider from "../feed/PeopleYouMayKnowSlider";
+import PeopleYouMayKnowSlider, { PeopleSuggestionsProvider } from "../feed/PeopleYouMayKnowSlider";
 import { getAdProFeedAds, trackAdCampaignEvent, likeAdCampaign, unlikeAdCampaign, saveAdCampaign, unsaveAdCampaign } from "../../services/adProApi";
 
 const FEED_PAGE_SIZE = 20;
@@ -532,7 +532,10 @@ export default function RecruitmentMiddle() {
             : "No posts yet. Be the first to post!"}
         </div>
       ) : (
-        <>
+        <PeopleSuggestionsProvider
+          currentUserId={mergedUser?.id}
+          currentUser={mergedUser}
+        >
           {posts.map((post, index) => (
             <React.Fragment key={post.feedItemKey || post.id}>
               <div id={`post-${post.feedItemKey || post.id}`}>
@@ -563,11 +566,13 @@ export default function RecruitmentMiddle() {
                 />
               )}
 
-              {/* People You May Know slider (Facebook-style, shown after 4 posts) */}
+              {/* People You May Know slider (Facebook-style, shown after every 4 posts) */}
               {feedMode === "home" &&
-                ((index + 1) === 4 ||
+                (((index + 1) % 4 === 0) ||
                   (posts.length < 4 && index === posts.length - 1)) && (
                   <PeopleYouMayKnowSlider
+                    key={`pymk-slider-${Math.floor(index / 4)}`}
+                    segmentIndex={Math.floor(index / 4)}
                     currentUserId={mergedUser?.id}
                     currentUser={mergedUser}
                   />
@@ -588,7 +593,7 @@ export default function RecruitmentMiddle() {
               You’ve reached the end of the feed
             </p>
           )}
-        </>
+        </PeopleSuggestionsProvider>
       )}
       <PostCreationModal
         isOpen={showModal}
