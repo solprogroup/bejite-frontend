@@ -357,20 +357,22 @@ export default function FeatureTour() {
     const MARGIN = 16;
     // Matches w-[min(100vw-2rem,22rem)]
     const cardWidth = Math.min(window.innerWidth - MARGIN * 2, 22 * 16);
+    // Do not center with CSS translate — framer-motion's y animation owns
+    // `transform` and would wipe translate(-50%, -50%), leaving left:50%
+    // (card stuck on the right half of the screen on mobile).
+    const estimatedCardHeight = 220;
 
     if (!rect) {
       return {
-        top: "50%",
-        left: "50%",
+        top: Math.max(MARGIN, (window.innerHeight - estimatedCardHeight) / 2),
+        left: Math.max(MARGIN, (window.innerWidth - cardWidth) / 2),
         width: cardWidth,
         maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
-        transform: "translate(-50%, -50%)",
       };
     }
 
     const spaceBelow = window.innerHeight - (rect.top + rect.height);
     const placeBelow = spaceBelow > 200;
-    const estimatedCardHeight = 200;
     let top = placeBelow
       ? rect.top + rect.height + 14
       : rect.top - 14;
@@ -383,7 +385,7 @@ export default function FeatureTour() {
     }
 
     const targetCenterX = rect.left + rect.width / 2;
-    // Position by left edge (no horizontal translate) so clamping is exact.
+    // Position by left edge so clamping stays exact.
     let left = targetCenterX - cardWidth / 2;
     left = Math.max(
       MARGIN,
@@ -395,7 +397,6 @@ export default function FeatureTour() {
       left,
       width: cardWidth,
       maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
-      transform: "none",
     };
   })();
 

@@ -2,7 +2,7 @@
  * Shared tour persistence helpers.
  * Bump FEATURE_TOUR_VERSION to re-show tours for existing users.
  */
-export const FEATURE_TOUR_VERSION = 2;
+export const FEATURE_TOUR_VERSION = 3;
 
 const FEATURE_BASE = "bejite_feature_tour_seen";
 const RM_LIST_BASE = "bejite_rm_list_tour_seen";

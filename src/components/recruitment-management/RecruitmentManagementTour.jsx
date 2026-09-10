@@ -256,20 +256,20 @@ export default function RecruitmentManagementTour({
   const tooltipStyle = (() => {
     const MARGIN = 16;
     const cardWidth = Math.min(window.innerWidth - MARGIN * 2, 22 * 16);
+    // Avoid CSS translate for centering — framer-motion owns `transform`.
+    const estimatedCardHeight = 210;
 
     if (!rect) {
       return {
-        top: "50%",
-        left: "50%",
+        top: Math.max(MARGIN, (window.innerHeight - estimatedCardHeight) / 2),
+        left: Math.max(MARGIN, (window.innerWidth - cardWidth) / 2),
         width: cardWidth,
         maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
-        transform: "translate(-50%, -50%)",
       };
     }
 
     const spaceBelow = window.innerHeight - (rect.top + rect.height);
     const placeBelow = spaceBelow > 200;
-    const estimatedCardHeight = 210;
     let top = placeBelow ? rect.top + rect.height + 14 : rect.top - 14;
 
     if (!placeBelow) {
@@ -291,7 +291,6 @@ export default function RecruitmentManagementTour({
       left,
       width: cardWidth,
       maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
-      transform: "none",
     };
   })();
 
