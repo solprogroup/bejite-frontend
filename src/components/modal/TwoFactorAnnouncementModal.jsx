@@ -15,6 +15,14 @@ import { getUser } from "../../utils/tokenManager";
 import { TwoFactorModal } from "./confirmBadgeModal";
 import { toast } from "react-toastify";
 
+function checkIsMobile() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.innerWidth < 640 ||
+    (window.matchMedia ? window.matchMedia("(max-width: 639px)").matches : false)
+  );
+}
+
 function isFeatureTourActive() {
   try {
     return sessionStorage.getItem("bejite_feature_tour_active") === "true";
@@ -30,7 +38,7 @@ export default function TwoFactorAnnouncementModal({
   onSetupSuccess,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(checkIsMobile);
+  const [isMobile, setIsMobile] = useState(() => checkIsMobile());
   // On mobile screens, skip the animation stage completely and show "Protect Account with 2FA" directly
   const [stage, setStage] = useState(() => (checkIsMobile() ? "details" : "intro"));
   const [setupModalOpen, setSetupModalOpen] = useState(false);
@@ -49,8 +57,21 @@ export default function TwoFactorAnnouncementModal({
     }
     pendingOpenRef.current = false;
     setIsOpen(true);
-    setStage("intro");
+    setStage(checkIsMobile() ? "details" : "intro");
   };
+
+  // Window resize listener to keep isMobile in sync
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = checkIsMobile();
+      setIsMobile(mobile);
+      if (mobile) {
+        setStage("details");
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Stay in sync with the first-timer feature tour
   useEffect(() => {
@@ -62,7 +83,7 @@ export default function TwoFactorAnnouncementModal({
       } else if (pendingOpenRef.current) {
         pendingOpenRef.current = false;
         setIsOpen(true);
-        setStage("intro");
+        setStage(checkIsMobile() ? "details" : "intro");
       }
     };
     window.addEventListener("bejite:feature-tour", onTour);
